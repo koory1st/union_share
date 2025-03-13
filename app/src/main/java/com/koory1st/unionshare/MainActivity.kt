@@ -14,21 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.ReportFragment.Companion.reportFragment
-import com.jd.open.api.sdk.DefaultJdClient
-import com.jd.open.api.sdk.domain.kplunion.promotioncommon.PromotionService.request.get.PromotionCodeReq
-import com.jd.open.api.sdk.domain.promotion.Promotion
-import com.jd.open.api.sdk.request.kplunion.UnionOpenPromotionBysubunionidGetRequest
-import com.jd.open.api.sdk.request.kplunion.UnionOpenPromotionCommonGetRequest
-import com.koory1st.unionshare.handler.JdHandler
 import com.koory1st.unionshare.ui.theme.UnionShareTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.CompletableFuture.AsynchronousCompletionTask
 
 
 class MainActivity : ComponentActivity() {
@@ -37,7 +27,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             UnionShareTheme {
                 // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
                     Greeting("Android")
                 }
             }
@@ -61,29 +54,26 @@ class MainActivity : ComponentActivity() {
             Log.d("MainActivity", it.toString())
 
             CoroutineScope(Dispatchers.Default).launch {
-                val task1 = async(Dispatchers.IO) {
-                    JdHandler().request(it.toString())
+                async(Dispatchers.IO) {
+                    val selectResult = HandlerSelector.select(it.toString())
+                    selectResult
+                }.await().onSuccess {
+                    Log.d("MainActivity", it)
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it))
+                    startActivity(intent)
+                }.onFailure {
+                    Log.e("MainActivity", it.toString())
                 }
-                val result = task1.await()
-                Log.d("MainActivity", result.toString())
-
-                if (result.isFailure) {
-                    return@launch
-                }
-
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(result.getOrNull()))
-                startActivity(intent)
             }
         }
-
     }
 }
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-            text = "Hello $name!",
-            modifier = modifier
+        text = "Hello $name!",
+        modifier = modifier
     )
 }
 

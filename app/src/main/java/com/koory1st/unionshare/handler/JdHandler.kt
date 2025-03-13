@@ -6,11 +6,11 @@ import com.jd.open.api.sdk.domain.kplunion.promotioncommon.PromotionService.requ
 import com.jd.open.api.sdk.request.kplunion.UnionOpenPromotionCommonGetRequest
 import com.koory1st.unionshare.BuildConfig
 
-class JdHandler {
+class JdHandler(private val url: String) : RequestUnion {
 
-    fun request(url: String): Result<String> {
+    override fun request(): Result<String> {
         val jdClient = DefaultJdClient(
-            "http://api.jd.com/routerjson",
+            BuildConfig.JD_URL,
             "",
             BuildConfig.JD_APP_KEY,
             BuildConfig.JD_APP_SECRET
@@ -25,6 +25,7 @@ class JdHandler {
         request.promotionCodeReq = PromotionCodeReq().apply {
             materialId = newUrl
             siteId = "4101240411"
+            sceneId = 2
         }
 
         val resp = jdClient.execute(request)
